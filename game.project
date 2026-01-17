@@ -1,0 +1,27 @@
+[bootstrap]
+main_collection = /main/main.collectionc
+render = /rendercam/rendercam.renderc
+
+[script]
+shared_state = 1
+
+[display]
+width = 256
+height = 540
+high_dpi = 1
+
+[android]
+input_method = HiddenInputField
+
+[physics]
+gravity_y = -1000.0
+scale = 0.01
+
+[html5]
+scale_mode = stretch
+
+[project]
+title = Bomber
+dependencies#0 = https://github.com/Insality/druid/archive/refs/tags/1.1.0.zip
+dependencies#1 = https://github.com/rgrams/rendercam/archive/master.zip
+

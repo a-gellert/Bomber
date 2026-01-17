@@ -1,0 +1,36 @@
+local GRID_SIZE = 16
+local MOVE_SPEED = 0.2
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("push") then
+		local direction = message.direction
+		local current_pos = go.get_position()
+		local target_pos = current_pos + (direction * GRID_SIZE)
+
+		-- 1. Сначала проверяем тайлмап (как и раньше)
+		local x = math.floor(target_pos.x / GRID_SIZE) + 1
+		local y = math.floor(target_pos.y / GRID_SIZE) + 1
+		local tm = "level#level"
+		local wall = tilemap.get_tile(tm, hash("walls"), x, y)
+		local brick = tilemap.get_tile(tm, hash("bricks"), x, y)
+
+		if wall ~= 0 or brick ~= 0 then
+			msg.post(sender, "push_failed")
+			return
+		end
+
+		-- 2. ТЕПЕРЬ ПРОВЕРЯЕМ ОБЪЕКТЫ (Raycast)
+		-- Стреляем лучом из центра текущей клетки в центр следующей
+		-- Группы в списке — это те, кто блокирует движение
+		local result = physics.raycast(current_pos, target_pos, { hash("box"), hash("dynamite"), hash("bomb"), hash("wall_object") })
+
+		if result then
+			-- Если луч во что-то попал, значит путь прегражден другим объектом
+			msg.post(sender, "push_failed")
+		else
+			-- Путь чист: и тайлы, и другие объекты не мешают
+			go.animate(".", "position", go.PLAYBACK_ONCE_FORWARD, target_pos, go.EASING_LINEAR, MOVE_SPEED)
+			msg.post(sender, "push_success")
+		end
+	end
+end

@@ -1,0 +1,38 @@
+local GRID_SIZE = 16
+
+-- Выносим логику в локальную функцию (она должна быть выше по коду, чем init)
+local function explode(self)
+	local pos = go.get_position()
+	-- Координаты тайлмапа (1-based)
+	local x = math.floor(pos.x / GRID_SIZE) + 1
+	local y = math.floor(pos.y / GRID_SIZE) + 1
+
+	local tm = "level#level" 
+	local layer_bricks = hash("bricks")
+
+	-- Проверяем 5 точек: центр и 4 стороны
+	local directions = {
+		{x=0, y=0}, {x=1, y=0}, {x=-1, y=0}, {x=0, y=1}, {x=0, y=-1}
+	}
+
+	for _, dir in ipairs(directions) do
+		local tx, ty = x + dir.x, y + dir.y
+		local tile = tilemap.get_tile(tm, layer_bricks, tx, ty)
+
+		if tile ~= 0 then
+			-- Удаляем кирпич
+			tilemap.set_tile(tm, layer_bricks, tx, ty, 0)
+			-- Тут позже добавим спавн бонуса!
+		end
+	end
+	msg.post("camera#camera", "zoom", { ratio = 1.2 })
+	print("БАБАХ!")
+	go.delete() 
+end
+
+function init(self)
+	-- Теперь вызываем локальную функцию напрямую
+	timer.delay(3, false, function()
+		explode(self)
+	end)
+end

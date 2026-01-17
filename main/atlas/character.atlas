@@ -1,0 +1,30 @@
+images {
+  image: "/main/resources/tile_0380.png"
+}
+images {
+  image: "/main/resources/tile_0022.png"
+}
+images {
+  image: "/main/resources/tile_0240.png"
+}
+animations {
+  id: "spikes_down"
+  images {
+    image: "/main/resources/tile_0045.png"
+  }
+  images {
+    image: "/main/resources/tile_0166.png"
+  }
+  fps: 6
+}
+animations {
+  id: "spikes_up"
+  images {
+    image: "/main/resources/tile_0166.png"
+  }
+  images {
+    image: "/main/resources/tile_0045.png"
+  }
+  fps: 6
+}
+extrude_borders: 2

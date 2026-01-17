@@ -1,0 +1,4 @@
+images {
+  image: "/main/resources/monochrome_tilemap.png"
+}
+extrude_borders: 2
