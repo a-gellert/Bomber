@@ -15,6 +15,7 @@ animations {
   images {
     image: "/main/resources/tile_0166.png"
   }
+  playback: PLAYBACK_ONCE_BACKWARD
   fps: 6
 }
 animations {
@@ -25,6 +26,7 @@ animations {
   images {
     image: "/main/resources/tile_0045.png"
   }
+  playback: PLAYBACK_ONCE_BACKWARD
   fps: 6
 }
 extrude_borders: 2

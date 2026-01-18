@@ -8,6 +8,23 @@ instances {
     z: 0.1
   }
 }
+instances {
+  id: "spike"
+  prototype: "/main/go/spike.go"
+  position {
+    x: 136.0
+    y: 24.0
+    z: 0.1
+  }
+}
+instances {
+  id: "diamond"
+  prototype: "/main/go/diamond.go"
+  position {
+    x: 24.0
+    y: 88.0
+  }
+}
 scale_along_z: 0
 embedded_instances {
   id: "level"
@@ -68,4 +85,12 @@ embedded_instances {
     x: 111.0
     y: 41.0
   }
+}
+embedded_instances {
+  id: "gui"
+  data: "components {\n"
+  "  id: \"game\"\n"
+  "  component: \"/main/game.gui\"\n"
+  "}\n"
+  ""
 }

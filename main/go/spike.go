@@ -1,15 +1,11 @@
 components {
-  id: "bomb"
-  component: "/main/scripts/bomb.script"
-}
-components {
-  id: "pushable"
-  component: "/main/scripts/pushable.script"
+  id: "spike"
+  component: "/main/scripts/spike.script"
 }
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "default_animation: \"tile_0022\"\n"
+  data: "default_animation: \"spikes_down\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "textures {\n"
   "  sampler: \"texture_sampler\"\n"
@@ -20,12 +16,12 @@ embedded_components {
 embedded_components {
   id: "collisionobject"
   type: "collisionobject"
-  data: "type: COLLISION_OBJECT_TYPE_KINEMATIC\n"
+  data: "type: COLLISION_OBJECT_TYPE_TRIGGER\n"
   "mass: 0.0\n"
   "friction: 0.1\n"
   "restitution: 0.5\n"
-  "group: \"bomb\"\n"
-  "mask: \"default\"\n"
+  "group: \"spikes\"\n"
+  "mask: \"player\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_BOX\n"
@@ -36,15 +32,9 @@ embedded_components {
   "    index: 0\n"
   "    count: 3\n"
   "  }\n"
-  "  data: 8.0\n"
-  "  data: 8.0\n"
-  "  data: 8.0\n"
+  "  data: 5.0\n"
+  "  data: 7.0\n"
+  "  data: 10.0\n"
   "}\n"
-  ""
-}
-embedded_components {
-  id: "explosion_factory"
-  type: "factory"
-  data: "prototype: \"/main/go/explosion.go\"\n"
   ""
 }

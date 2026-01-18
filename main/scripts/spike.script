@@ -1,0 +1,55 @@
+local STATE_HIDE = hash("spikes_down")
+local STATE_SHOW = hash("spikes_up")
+local GROUP_PLAYER = hash("player")
+
+go.property("start_delay", 0) 
+go.property("interval", 3.0) 
+
+function init(self)
+	--msg.post("@system:", "toggle_physics_debug")
+	self.is_active = false
+	self.player_inside = false
+	-- Запоминаем стартовую позицию, чтобы возвращаться к ней после дрожания
+	self.start_pos = go.get_position()
+
+	timer.delay(self.start_delay, false, function()
+		timer.delay(self.interval, true, function()
+			-- 1. ЭФФЕКТ ДРОЖАНИЯ
+			-- Смещаем весь объект по X на 2 пикселя туда-сюда
+			local left = self.start_pos.x - 2
+			local right = self.start_pos.x + 2
+
+			go.animate(".", "position.x", go.PLAYBACK_ONCE_PINGPONG, left, go.EASING_LINEAR, 0.05, 0, function()
+				go.animate(".", "position.x", go.PLAYBACK_ONCE_PINGPONG, right, go.EASING_LINEAR, 0.05, 0, function()
+					-- Возвращаемся в исходную точку
+					go.set_position(self.start_pos)
+
+					-- 2. АКТИВАЦИЯ ШИПОВ
+					self.is_active = not self.is_active
+					local anim = self.is_active and STATE_SHOW or STATE_HIDE
+					sprite.play_flipbook("#sprite", anim)
+
+					-- 3. ПРОВЕРКА УРОНА ПРИ АКТИВАЦИИ
+					if self.is_active and self.player_inside then
+						-- Важно: используйте правильный путь к игроку (например, "/player")
+						msg.post("/player", "take_damage", { amount = 1 })
+						print("Урон")
+					end
+				end)
+			end)
+		end)
+	end)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("trigger_response") then
+		if message.other_group == GROUP_PLAYER then
+			self.player_inside = message.enter 
+
+			if self.player_inside and self.is_active then
+				msg.post(message.other_id, "take_damage", { amount = 1 })
+				print("Урон22")
+			end
+		end
+	end
+end

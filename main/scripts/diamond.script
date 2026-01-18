@@ -1,0 +1,13 @@
+function on_message(self, message_id, message, sender)
+	-- Когда игрок касается триггера
+	if message_id == hash("trigger_response") and message.enter then
+		-- Отправляем сообщение в GUI (адрес ниже настроим)
+		msg.post("/gui#game", "add_score", { amount = 100 })
+
+		-- Удаляем алмаз
+		go.delete()
+
+		-- Можно добавить звук или эффект здесь
+		print("Алмаз собран!")
+	end
+end
