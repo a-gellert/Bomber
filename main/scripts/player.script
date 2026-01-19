@@ -42,7 +42,7 @@ local function move_to_cell(self, direction)
 	-- 2. Проверяем, нет ли там динамического объекта (Динамит/Коробка)
 	-- В Defold для этого удобно использовать raycast или хранить таблицу позиций.
 	-- Для MVP используем простой физический запрос:
-	local ray_hit = physics.raycast(current_pos, target_pos, {hash("box"), hash("dynamite"), hash("bomb")})
+	local ray_hit = physics.raycast(current_pos, target_pos, {hash("box"), hash("dynamite"), hash("bombs")})
 
 	if ray_hit then
 		-- Если уперлись в объект — пробуем его толкнуть

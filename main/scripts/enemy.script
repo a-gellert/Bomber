@@ -1,0 +1,195 @@
+-- Настройки для инспектора
+go.property("ai_type", 1) -- 1: Верт, 2: Гориз, 3: Рандом, 4: Преследователь
+go.property("speed", 100) -- Пикселей в секунду
+go.property("sight_range", 200) -- Дальность зрения для преследователя
+
+local GRID_SIZE = 16
+local GROUP_PLAYER = hash("player")
+local WALLS = { hash("walls"), hash("bricks"), hash("bombs") }
+
+-- Константы типов поведения
+local AI_LINEAR_V = 1
+local AI_LINEAR_H = 2
+local AI_RANDOM = 3
+local AI_CHASER = 4
+
+function init(self)
+	-- Начальное направление (зависит от типа)
+	if self.ai_type == AI_LINEAR_V then
+		self.direction = vmath.vector3(0, 1, 0) -- Вверх
+	elseif self.ai_type == AI_LINEAR_H then
+		self.direction = vmath.vector3(1, 0, 0) -- Вправо
+	else
+		self.direction = vmath.vector3(0, 0, 0) -- Стоим, ждем решения
+	end
+
+	self.is_moving = false
+
+	-- Запускаем цикл мышления
+	self.think_timer = timer.delay(0.1, true, function()
+		think_and_move(self)
+	end)
+end
+
+-- === БЛОК 1: ПРОВЕРКА УРОНА И КОЛЛИЗИЙ ===
+
+function on_message(self, message_id, message, sender)
+	-- Урон от взрыва или другой логики
+	if message_id == hash("die") or message_id == hash("take_damage") then
+		go.delete() -- Или проиграть анимацию смерти
+		-- Можно добавить партиклы или звук
+	end
+
+	-- Нанесение урона игроку (Trigger Response)
+	if message_id == hash("trigger_response") then
+		if message.enter and message.other_group == GROUP_PLAYER then
+			msg.post(message.other_id, "take_damage", { amount = 1 })
+		end
+	end
+end
+
+-- === БЛОК 2: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+
+-- Проверка: можно ли шагнуть в эту клетку?
+local function can_move_to(pos, direction)
+	local target = pos + (direction * GRID_SIZE)
+	-- Пускаем луч в центр соседней клетки
+	local hit = physics.raycast(pos, target, WALLS)
+	return hit == nil -- Если луч никого не задел, путь свободен
+end
+
+-- Видим ли мы игрока? (Для Chaser)
+local function can_see_player(self, my_pos)
+	-- Ищем игрока в коллекции
+	-- (В реальном проекте лучше хранить ссылку на игрока в level_manager, 
+	-- но пока найдем через url, если он известен, или будем искать ближайшего)
+
+	-- Упрощение: пускаем луч в сторону игрока, если знаем где он.
+	-- Для этого нам нужно знать позицию игрока.
+	-- Пусть игрок обновляет свою позицию в глобальной переменной или шлет сообщение.
+	-- ДЛЯ ПРИМЕРА: Предположим, игрок - это "/player"
+	local status, player_pos = pcall(go.get_position, "/player")
+	if not status then return false end -- Игрока нет на сцене
+
+	local dist = vmath.length(player_pos - my_pos)
+	if dist > self.sight_range then return false end
+
+	-- Пускаем луч к игроку
+	local hit = physics.raycast(my_pos, player_pos, WALLS)
+	-- Если луч не попал в стены, значит мы видим игрока
+	return hit == nil, player_pos
+end
+
+-- === БЛОК 3: ЛОГИКА ПОВЕДЕНИЯ (МОЗГИ) ===
+
+function think_and_move(self)
+	if self.is_moving then return end -- Если мы еще идем, не думаем
+
+	local pos = go.get_position()
+	-- Центрируем позицию (коррекция дрифта)
+	pos.x = math.floor(pos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2
+	pos.y = math.floor(pos.y / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2
+	go.set_position(pos)
+
+	local next_dir = vmath.vector3(0, 0, 0)
+
+	-- ЛОГИКА 1 и 2: ЛИНЕЙНОЕ ДВИЖЕНИЕ
+	if self.ai_type == AI_LINEAR_V or self.ai_type == AI_LINEAR_H then
+		if can_move_to(pos, self.direction) then
+			next_dir = self.direction
+		else
+			-- Уперлись в стену -> разворот
+			self.direction = -self.direction
+			-- Пробуем сразу пойти назад, если там свободно
+			if can_move_to(pos, self.direction) then
+				next_dir = self.direction
+			end
+		end
+
+		-- ЛОГИКА 3: СЛУЧАЙНОЕ БЛУЖДАНИЕ (RANDOM)
+	elseif self.ai_type == AI_RANDOM then
+		local dirs = { vmath.vector3(0,1,0), vmath.vector3(0,-1,0), vmath.vector3(1,0,0), vmath.vector3(-1,0,0) }
+		-- Если мы уже шли куда-то, попробуем продолжить путь с 70% вероятностью (чтобы не дергался)
+		if self.direction ~= vmath.vector3(0,0,0) and can_move_to(pos, self.direction) and math.random() > 0.3 then
+			next_dir = self.direction
+		else
+			-- Ищем доступные пути
+			local valid_dirs = {}
+			for _, d in ipairs(dirs) do
+				if can_move_to(pos, d) then table.insert(valid_dirs, d) end
+			end
+
+			if #valid_dirs > 0 then
+				-- Выбираем случайный из доступных
+				next_dir = valid_dirs[math.random(#valid_dirs)]
+				self.direction = next_dir
+			end
+		end
+
+		-- ЛОГИКА 4: ПРЕСЛЕДОВАТЕЛЬ (CHASER)
+	elseif self.ai_type == AI_CHASER then
+		local see, target_pos = can_see_player(self, pos)
+
+		if see then
+			-- Простая логика: двигаться по оси, где разница больше
+			local diff = target_pos - pos
+			local try_x = vmath.vector3(diff.x > 0 and 1 or -1, 0, 0)
+			local try_y = vmath.vector3(0, diff.y > 0 and 1 or -1, 0)
+
+			if math.abs(diff.x) > math.abs(diff.y) then
+				-- Приоритет X
+				if can_move_to(pos, try_x) then next_dir = try_x
+				elseif can_move_to(pos, try_y) then next_dir = try_y end
+			else
+				-- Приоритет Y
+				if can_move_to(pos, try_y) then next_dir = try_y
+				elseif can_move_to(pos, try_x) then next_dir = try_x end
+			end
+
+			-- Если не смогли пойти к игроку (застряли), идем рандомно
+			if next_dir == vmath.vector3(0,0,0) then
+				-- (Копипаст логики рандома или простой fallback)
+				local dirs = {vmath.vector3(1,0,0), vmath.vector3(-1,0,0), vmath.vector3(0,1,0), vmath.vector3(0,-1,0)}
+				for _, d in ipairs(dirs) do
+					if can_move_to(pos, d) then next_dir = d; break end
+				end
+			end
+		else
+			-- Игрока не видно -> ведем себя как RANDOM
+			-- (Можно вызвать функцию Random Behavior здесь)
+			local dirs = { vmath.vector3(0,1,0), vmath.vector3(0,-1,0), vmath.vector3(1,0,0), vmath.vector3(-1,0,0) }
+			if self.direction ~= vmath.vector3(0,0,0) and can_move_to(pos, self.direction) and math.random() > 0.3 then
+				next_dir = self.direction
+			else
+				local valid_dirs = {}
+				for _, d in ipairs(dirs) do if can_move_to(pos, d) then table.insert(valid_dirs, d) end end
+				if #valid_dirs > 0 then
+					next_dir = valid_dirs[math.random(#valid_dirs)]
+					self.direction = next_dir
+				end
+			end
+		end
+	end
+
+	-- === ИСПОЛНЕНИЕ ДВИЖЕНИЯ ===
+	if next_dir ~= vmath.vector3(0, 0, 0) then
+		move_step(self, pos, next_dir)
+	end
+end
+
+function move_step(self, current_pos, dir)
+	self.is_moving = true
+
+	local target_pos = current_pos + (dir * GRID_SIZE)
+	-- Длительность = Расстояние / Скорость
+	local duration = GRID_SIZE / self.speed 
+
+	-- Выбираем анимацию ходьбы (можно добавить Flipbook play здесь)
+	-- if dir.x > 0 then sprite.play(...) end
+
+	go.animate(".", "position", go.PLAYBACK_ONCE_FORWARD, target_pos, go.EASING_LINEAR, duration, 0, function()
+		self.is_moving = false
+		-- Сразу запускаем думалку снова, чтобы движение было непрерывным
+		think_and_move(self)
+	end)
+end

@@ -1,31 +1,36 @@
 components {
-  id: "bomb"
-  component: "/main/scripts/bomb.script"
-}
-components {
-  id: "pushable"
-  component: "/main/scripts/pushable.script"
+  id: "enemy"
+  component: "/main/scripts/enemy.script"
+  properties {
+    id: "ai_type"
+    value: "3.0"
+    type: PROPERTY_TYPE_NUMBER
+  }
 }
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "default_animation: \"tile_0022\"\n"
+  data: "default_animation: \"tile_0240\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "textures {\n"
   "  sampler: \"texture_sampler\"\n"
   "  texture: \"/main/atlas/character.atlas\"\n"
   "}\n"
   ""
+  position {
+    z: 0.5
+  }
 }
 embedded_components {
   id: "collisionobject"
   type: "collisionobject"
-  data: "type: COLLISION_OBJECT_TYPE_KINEMATIC\n"
+  data: "type: COLLISION_OBJECT_TYPE_TRIGGER\n"
   "mass: 0.0\n"
   "friction: 0.1\n"
   "restitution: 0.5\n"
-  "group: \"bombs\"\n"
-  "mask: \"default\"\n"
+  "group: \"enemy\"\n"
+  "mask: \"player\"\n"
+  "mask: \"explosion\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_BOX\n"
@@ -36,15 +41,9 @@ embedded_components {
   "    index: 0\n"
   "    count: 3\n"
   "  }\n"
-  "  data: 8.0\n"
-  "  data: 8.0\n"
-  "  data: 8.0\n"
+  "  data: 7.0\n"
+  "  data: 7.0\n"
+  "  data: 10.0\n"
   "}\n"
-  ""
-}
-embedded_components {
-  id: "explosion_factory"
-  type: "factory"
-  data: "prototype: \"/main/go/explosion.go\"\n"
   ""
 }

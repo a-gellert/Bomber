@@ -16,7 +16,7 @@ function on_message(self, message_id, message, sender)
 		if message.enter and message.other_group == hash("player") then
 			msg.post(message.other_id, "take_damage", { amount = 1 })
 			print("Игрок обжегся!")
-		elseif message.enter and message.other_group == hash("enemies") then
+		elseif message.enter and message.other_group == hash("enemy") then
 			msg.post(message.other_id, "die") -- Если у врага есть такая логика
 		end
 	end

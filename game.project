@@ -19,6 +19,9 @@ scale = 0.01
 
 [html5]
 scale_mode = stretch
+heap_size = 128
+show_fullscreen_button = 0
+show_made_with_defold = 0
 
 [project]
 title = Bomber
