@@ -1,0 +1,7 @@
+function on_message(self, message_id, message, sender)
+	if message_id == hash("trigger_response") and message.enter then
+		-- Сообщаем загрузчику, что пора менять уровень
+		msg.post("/level_manager#script", "next_level")
+		print("Уровень пройден!")
+	end
+end

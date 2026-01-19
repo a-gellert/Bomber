@@ -1,0 +1,34 @@
+tile_set: "/main/atlas/Environment.tilesource"
+layers {
+  id: "ground"
+  z: 0.0
+  cell {
+    x: 29
+    y: 29
+    tile: 131
+  }
+}
+layers {
+  id: "walls"
+  z: 1.0
+  cell {
+    x: 29
+    y: 29
+    tile: 131
+  }
+}
+layers {
+  id: "bricks"
+  z: 1.0
+  cell {
+    x: 0
+    y: 0
+    tile: 131
+  }
+  cell {
+    x: 29
+    y: 29
+    tile: 131
+  }
+}
+material: "/builtins/materials/tile_map.material"

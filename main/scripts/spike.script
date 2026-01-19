@@ -6,7 +6,7 @@ go.property("start_delay", 0)
 go.property("interval", 3.0) 
 
 function init(self)
-	msg.post("@system:", "toggle_physics_debug")
+	
 	self.is_active = false
 	self.player_inside = false
 	-- Запоминаем стартовую позицию, чтобы возвращаться к ней после дрожания

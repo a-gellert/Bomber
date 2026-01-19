@@ -1,103 +1,5 @@
 name: "main"
-instances {
-  id: "player"
-  prototype: "/main/go/player.go"
-  position {
-    x: 24.0
-    y: 24.0
-    z: 0.1
-  }
-}
-instances {
-  id: "spike"
-  prototype: "/main/go/spike.go"
-  position {
-    x: 136.0
-    y: 24.0
-    z: 0.1
-  }
-}
-instances {
-  id: "diamond"
-  prototype: "/main/go/diamond.go"
-  position {
-    x: 24.0
-    y: 88.0
-  }
-}
-instances {
-  id: "enemy"
-  prototype: "/main/go/enemy.go"
-  position {
-    x: 152.0
-    y: 24.0
-  }
-  component_properties {
-    id: "enemy"
-    properties {
-      id: "ai_type"
-      value: "1.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "speed"
-      value: "16.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "sight_range"
-      value: "32.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-  }
-}
-instances {
-  id: "enemy1"
-  prototype: "/main/go/enemy.go"
-  position {
-    x: 168.0
-    y: 24.0
-  }
-  component_properties {
-    id: "enemy"
-    properties {
-      id: "ai_type"
-      value: "3.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "speed"
-      value: "16.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "sight_range"
-      value: "32.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-  }
-}
 scale_along_z: 0
-embedded_instances {
-  id: "level"
-  data: "components {\n"
-  "  id: \"level\"\n"
-  "  component: \"/main/tilemap/level.tilemap\"\n"
-  "}\n"
-  "embedded_components {\n"
-  "  id: \"collisionobject\"\n"
-  "  type: \"collisionobject\"\n"
-  "  data: \"collision_shape: \\\"/main/tilemap/level.tilemap\\\"\\n"
-  "type: COLLISION_OBJECT_TYPE_KINEMATIC\\n"
-  "mass: 0.0\\n"
-  "friction: 0.1\\n"
-  "restitution: 0.5\\n"
-  "group: \\\"default\\\"\\n"
-  "mask: \\\"default\\\"\\n"
-  "\"\n"
-  "}\n"
-  ""
-}
 embedded_instances {
   id: "camera"
   data: "components {\n"
@@ -155,6 +57,48 @@ embedded_instances {
   data: "components {\n"
   "  id: \"game\"\n"
   "  component: \"/main/game.gui\"\n"
+  "}\n"
+  ""
+}
+embedded_instances {
+  id: "level_manager"
+  data: "components {\n"
+  "  id: \"template\"\n"
+  "  component: \"/main/tilemap/template.tilemap\"\n"
+  "}\n"
+  "components {\n"
+  "  id: \"level_loader\"\n"
+  "  component: \"/main/scripts/level_loader.script\"\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"enemy_factory\"\n"
+  "  type: \"factory\"\n"
+  "  data: \"prototype: \\\"/main/go/enemy.go\\\"\\n"
+  "\"\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"exit_factory\"\n"
+  "  type: \"factory\"\n"
+  "  data: \"prototype: \\\"/main/go/exit.go\\\"\\n"
+  "\"\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"player_factory\"\n"
+  "  type: \"factory\"\n"
+  "  data: \"prototype: \\\"/main/go/player.go\\\"\\n"
+  "\"\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"collisionobject\"\n"
+  "  type: \"collisionobject\"\n"
+  "  data: \"collision_shape: \\\"/main/tilemap/template.tilemap\\\"\\n"
+  "type: COLLISION_OBJECT_TYPE_STATIC\\n"
+  "mass: 0.0\\n"
+  "friction: 0.1\\n"
+  "restitution: 0.5\\n"
+  "group: \\\"default\\\"\\n"
+  "mask: \\\"default\\\"\\n"
+  "\"\n"
   "}\n"
   ""
 }

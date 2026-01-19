@@ -6,12 +6,13 @@ local LAYER_WALLS = hash("walls") -- Неразрушимые стены
 local LAYER_BRICKS = hash("bricks") -- Разрушаемые стены
 
 function init(self)
+	msg.post("@system:", "toggle_physics_debug")
 	msg.post(".", "acquire_input_focus")
 	self.is_moving = false
 	-- Храним текущее направление ввода
 	self.input_dir = vmath.vector3(0, 0, 0)
 	-- Ссылка на тайлмап (путь к компоненту)
-	self.tilemap_url = "level#level" 
+	self.tilemap_url = "level_manager#template" 
 end
 
 -- Функция проверки: можно ли наступить в клетку?

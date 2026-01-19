@@ -10,7 +10,7 @@ function on_message(self, message_id, message, sender)
 		-- 1. Сначала проверяем тайлмап (как и раньше)
 		local x = math.floor(target_pos.x / GRID_SIZE) + 1
 		local y = math.floor(target_pos.y / GRID_SIZE) + 1
-		local tm = "level#level"
+		local tm = "level_manager#template"
 		local wall = tilemap.get_tile(tm, hash("walls"), x, y)
 		local brick = tilemap.get_tile(tm, hash("bricks"), x, y)
 

@@ -1,0 +1,65 @@
+local levels = require "main.levels"
+
+local LAYER_WALLS = hash("walls")
+local LAYER_BRICKS = hash("bricks")
+local TILE_WALL = 376 
+local TILE_BRICK = 52
+
+local function load_level(self, level_id)
+	local x, y, w, h = tilemap.get_bounds("#template")
+	print("РЕАЛЬНЫЕ ГРАНИЦЫ ТАЙЛМАПА: ", x, y, w, h)
+	-- Очистка
+	for _, id in ipairs(self.spawned_objects) do
+		if go.exists(id) then go.delete(id) end
+	end
+	self.spawned_objects = {}
+
+	local data = levels.schemes[level_id]
+	if not data then return end
+
+	print("--- ЗАГРУЗКА УРОВНЯ " .. level_id .. " ---")
+	local height = #data
+
+	for y, row in ipairs(data) do
+		local map_y = height - y + 1 
+		for x = 1, #row do
+			local char = string.sub(row, x, x)
+			local pos = vmath.vector3((x - 1) * 16 + 8, (map_y - 1) * 16 + 8, 0.5)
+
+			-- Используем pcall, чтобы игра не вылетала при ошибке тайлмапа
+			local status, err = pcall(function()
+				if char == "W" then
+					tilemap.set_tile("#template", LAYER_WALLS, x, map_y, TILE_WALL)
+				elseif char == "B" then
+					tilemap.set_tile("#template", LAYER_BRICKS, x, map_y, TILE_BRICK)
+				elseif char == "P" then
+					local id = factory.create("#player_factory", pos)
+					table.insert(self.spawned_objects, id)
+				elseif char == "X" then
+					local id = factory.create("#exit_factory", pos)
+					table.insert(self.spawned_objects, id)
+				elseif char >= "1" and char <= "4" then
+					local id = factory.create("#enemy_factory", pos, nil, { ai_type = tonumber(char) })
+					table.insert(self.spawned_objects, id)
+				end
+			end)
+
+			if not status then
+				print("ОШИБКА в ячейке x:"..x.." y:"..map_y..": " .. err)
+			end
+		end
+	end
+end
+
+function init(self)
+	self.spawned_objects = {}
+	self.current_level = 1
+	load_level(self, self.current_level)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("next_level") then
+		self.current_level = self.current_level + 1
+		load_level(self, self.current_level)
+	end
+end
