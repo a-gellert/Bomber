@@ -6,7 +6,7 @@ local LAYER_WALLS = hash("walls") -- Неразрушимые стены
 local LAYER_BRICKS = hash("bricks") -- Разрушаемые стены
 
 function init(self)
-	msg.post("@system:", "toggle_physics_debug")
+--	msg.post("@system:", "toggle_physics_debug")
 	msg.post(".", "acquire_input_focus")
 	self.is_moving = false
 	-- Храним текущее направление ввода

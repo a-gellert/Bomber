@@ -1,0 +1,30 @@
+-- camera.script
+function init(self)
+	-- Сообщаем рендеру, что мы хотим использовать эту камеру
+	msg.post("@render:", "use_camera_projection")
+	-- Делаем камеру активной
+	msg.post("#camera", "acquire_camera_focus")
+
+	-- Базовые размеры (из настроек проекта)
+	self.base_w = 720
+	self.base_h = 1280
+end
+
+function update(self, dt)
+	local window_w, window_h = window.get_size()
+
+	-- Рассчитываем соотношение сторон
+	local aspect_ratio = window_w / window_h
+
+	-- Если экран шире, чем 9:16 (десктоп)
+	if aspect_ratio > (self.base_w / self.base_h) then
+		-- Фиксируем высоту, расширяем ширину
+		-- Это то самое "расширение игровой области"
+		local new_width = self.base_h * aspect_ratio
+
+		-- Сдвигаем камеру так, чтобы центр уровня оставался в центре
+		-- Если хочешь "обрезать низ", можно поиграть с параметром y
+		local offset_x = (new_width - self.base_w) / 2
+		go.set_position(vmath.vector3(-offset_x, 0, 0))
+	end
+end

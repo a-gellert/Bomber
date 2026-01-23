@@ -16,7 +16,7 @@ M.schemes = {
 		"WWWWWWWWWWWWWWW",
 		"W P B B B B B W",
 		"W BWBWBWBWBWB W",
-		"W 1 . . . . X W",
+		"W 2 . . . . X W",
 		"WWWWWWWWWWWWWWW",
 	}
 }

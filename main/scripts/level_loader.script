@@ -2,50 +2,69 @@ local levels = require "main.levels"
 
 local LAYER_WALLS = hash("walls")
 local LAYER_BRICKS = hash("bricks")
-local TILE_WALL = 376 
-local TILE_BRICK = 52
 
-local function load_level(self, level_id)
-	local x, y, w, h = tilemap.get_bounds("#template")
-	print("РЕАЛЬНЫЕ ГРАНИЦЫ ТАЙЛМАПА: ", x, y, w, h)
-	-- Очистка
+local function clear_level(self)
+	-- 1. Удаляем только те объекты, что были созданы
 	for _, id in ipairs(self.spawned_objects) do
-		if go.exists(id) then go.delete(id) end
+		if go.exists(id) then
+			go.delete(id)
+		end
 	end
 	self.spawned_objects = {}
 
-	local data = levels.schemes[level_id]
-	if not data then return end
+	-- 2. Умная очистка тайлмапа
+	-- Узнаем текущие границы (где реально нарисованы плитки)
+	local x, y, w, h = tilemap.get_bounds("#template")
 
-	print("--- ЗАГРУЗКА УРОВНЯ " .. level_id .. " ---")
+	-- Стираем только в пределах этих границ
+	-- Это уберет ошибки "Out of range" при очистке
+	if w > 0 and h > 0 then
+		for tx = x, x + w - 1 do
+			for ty = y, y + h - 1 do
+				tilemap.set_tile("#template", LAYER_WALLS, tx, ty, 0)
+				tilemap.set_tile("#template", LAYER_BRICKS, tx, ty, 0)
+			end
+		end
+	end
+end
+
+local function load_level(self, level_id)
+	local data = levels.schemes[level_id]
+	if not data then 
+		print("Уровень " .. level_id .. " не найден!") 
+		return 
+	end
+
+	-- Очищаем ПЕРЕД тем как рисовать новый
+	clear_level(self)
+
+	print("Загрузка уровня: " .. level_id)
 	local height = #data
 
 	for y, row in ipairs(data) do
 		local map_y = height - y + 1 
 		for x = 1, #row do
 			local char = string.sub(row, x, x)
-			local pos = vmath.vector3((x - 1) * 16 + 8, (map_y - 1) * 16 + 8, 0.5)
+			local pos = vmath.vector3((x - 1) * levels.TILE_SIZE + 8, (map_y - 1) * levels.TILE_SIZE + 8, 0)
 
-			-- Используем pcall, чтобы игра не вылетала при ошибке тайлмапа
-			local status, err = pcall(function()
-				if char == "W" then
-					tilemap.set_tile("#template", LAYER_WALLS, x, map_y, TILE_WALL)
-				elseif char == "B" then
-					tilemap.set_tile("#template", LAYER_BRICKS, x, map_y, TILE_BRICK)
-				elseif char == "P" then
-					local id = factory.create("#player_factory", pos)
-					table.insert(self.spawned_objects, id)
-				elseif char == "X" then
-					local id = factory.create("#exit_factory", pos)
-					table.insert(self.spawned_objects, id)
-				elseif char >= "1" and char <= "4" then
-					local id = factory.create("#enemy_factory", pos, nil, { ai_type = tonumber(char) })
-					table.insert(self.spawned_objects, id)
-				end
-			end)
-
-			if not status then
-				print("ОШИБКА в ячейке x:"..x.." y:"..map_y..": " .. err)
+			-- Ставим плитку только если она в текстовой схеме
+			-- Если уровень большой, убедитесь что в .tilemap границы 100х100
+			if char == "W" then
+				tilemap.set_tile("#template", LAYER_WALLS, x, map_y, 376)
+			elseif char == "B" then
+				tilemap.set_tile("#template", LAYER_BRICKS, x, map_y, 52)
+			elseif char == "P" then
+				pos.z = 1.0
+				local id = factory.create("#player_factory", pos)
+				table.insert(self.spawned_objects, id)
+			elseif char == "X" then
+				pos.z = 0.5
+				local id = factory.create("#exit_factory", pos)
+				table.insert(self.spawned_objects, id)
+			elseif char >= "1" and char <= "4" then
+				pos.z = 0.8
+				local id = factory.create("#enemy_factory", pos, nil, { ai_type = tonumber(char) })
+				table.insert(self.spawned_objects, id)
 			end
 		end
 	end

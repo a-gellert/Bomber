@@ -1,3 +1,7 @@
+components {
+  id: "exit"
+  component: "/main/scripts/exit.script"
+}
 embedded_components {
   id: "sprite"
   type: "sprite"

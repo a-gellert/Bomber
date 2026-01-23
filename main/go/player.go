@@ -29,6 +29,7 @@ embedded_components {
   "group: \"player\"\n"
   "mask: \"spikes\"\n"
   "mask: \"diamond\"\n"
+  "mask: \"exit\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_BOX\n"
