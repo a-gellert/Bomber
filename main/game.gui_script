@@ -1,5 +1,59 @@
+local hash_touch = hash("touch")
+
 function init(self)
-	self.score = 0
+	-- Ссылка на узлы
+	self.bg = gui.get_node("joystick_bg")
+	self.stick = gui.get_node("joystick_stick")
+
+	-- Настройки
+	self.max_distance = 100 -- Радиус хода стика в пикселях
+	self.center = gui.get_screen_position(self.bg) -- Центр джойстика на экране
+	self.touch_id = nil -- ID текущего касания
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash_touch then
+		-- Начало касания
+		if action.pressed and gui.pick_node(self.bg, action.x, action.y) then
+			self.touch_id = action.id
+		end
+		
+		-- Добавь это в on_input выше
+		if action_id == hash_touch and action.pressed then
+			local bomb_btn = gui.get_node("bomb_button")
+			if gui.pick_node(bomb_btn, action.x, action.y) then
+				msg.post("player#script", "plant_bomb")
+			end
+		end
+		
+		-- Движение пальца
+		if self.touch_id == action.id then
+			local touch_pos = vmath.vector3(action.x, action.y, 0)
+			local delta = touch_pos - self.center
+
+			-- Ограничиваем длину вектора (чтобы стик не улетал за границы)
+			local length = vmath.length(delta)
+			if length > self.max_distance then
+				delta = (delta / length) * self.max_distance
+				length = self.max_distance
+			end
+
+			-- Визуально двигаем стик (относительно центра фона)
+			gui.set_position(self.stick, delta)
+
+			-- Отправляем данные игроку
+			local direction = vmath.normalize(delta)
+			local ratio = length / self.max_distance
+			msg.post("player#script", "move", { direction = direction, ratio = ratio })
+
+			-- Если палец отпустили — сброс
+			if action.released then
+				self.touch_id = nil
+				gui.set_position(self.stick, vmath.vector3(0, 0, 0))
+				msg.post("player#script", "move", { direction = vmath.vector3(0), ratio = 0 })
+			end
+		end
+	end
 end
 
 function on_message(self, message_id, message, sender)

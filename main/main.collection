@@ -6,13 +6,18 @@ embedded_instances {
   "  id: \"camera\"\n"
   "  component: \"/rendercam/camera.script\"\n"
   "  properties {\n"
+  "    id: \"farZ\"\n"
+  "    value: \"2.0\"\n"
+  "    type: PROPERTY_TYPE_NUMBER\n"
+  "  }\n"
+  "  properties {\n"
   "    id: \"fixedAspectRatio\"\n"
   "    value: \"true\"\n"
   "    type: PROPERTY_TYPE_BOOLEAN\n"
   "  }\n"
   "  properties {\n"
   "    id: \"aspectRatio\"\n"
-  "    value: \"9.0, 16.0, 0.0\"\n"
+  "    value: \"16.0, 16.0, 0.0\"\n"
   "    type: PROPERTY_TYPE_VECTOR3\n"
   "  }\n"
   "  properties {\n"
@@ -22,12 +27,12 @@ embedded_instances {
   "  }\n"
   "  properties {\n"
   "    id: \"viewArea\"\n"
-  "    value: \"360.0, 690.0, 0.0\"\n"
+  "    value: \"240.0, 320.0, 0.0\"\n"
   "    type: PROPERTY_TYPE_VECTOR3\n"
   "  }\n"
   "  properties {\n"
   "    id: \"expandView\"\n"
-  "    value: \"true\"\n"
+  "    value: \"false\"\n"
   "    type: PROPERTY_TYPE_BOOLEAN\n"
   "  }\n"
   "  properties {\n"
@@ -43,7 +48,7 @@ embedded_instances {
   "}\n"
   ""
   position {
-    x: 111.0
+    x: 120.0
     y: 41.0
   }
 }

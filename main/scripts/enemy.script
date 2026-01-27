@@ -24,7 +24,7 @@ function init(self)
 	end
 
 	self.is_moving = false
-
+	print("Враг создан на позиции: " .. tostring(go.get_position()))
 	-- Запускаем цикл мышления
 	self.think_timer = timer.delay(0.1, true, function()
 		think_and_move(self)

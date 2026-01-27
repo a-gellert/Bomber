@@ -3,10 +3,14 @@ fonts {
   name: "druid_text_regular"
   font: "/druid/fonts/druid_text_regular.font"
 }
+textures {
+  name: "gui"
+  texture: "/main/atlas/gui.atlas"
+}
 nodes {
   position {
     x: 100.0
-    y: 540.0
+    y: 1240.0
   }
   size {
     x: 200.0
@@ -19,6 +23,44 @@ nodes {
   xanchor: XANCHOR_LEFT
   pivot: PIVOT_N
   inherit_alpha: true
+}
+nodes {
+  position {
+    x: 104.0
+    y: 122.0
+  }
+  type: TYPE_BOX
+  texture: "gui/circleOut"
+  id: "joystick_bg"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  scale {
+    x: 0.8
+    y: 0.8
+    z: 0.8
+  }
+  type: TYPE_BOX
+  texture: "gui/circleIn"
+  id: "joystick_stick"
+  parent: "joystick_bg"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  position {
+    x: 486.0
+    y: 113.0
+  }
+  size {
+    x: 64.0
+    y: 64.0
+  }
+  type: TYPE_BOX
+  id: "bomb_button"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
 }
 material: "/builtins/materials/gui.material"
 adjust_reference: ADJUST_REFERENCE_PARENT

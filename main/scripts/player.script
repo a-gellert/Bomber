@@ -68,6 +68,21 @@ function on_message(self, message_id, message, sender)
 			self.is_moving = false
 		end)
 	end
+	if message_id == hash("move") then
+		self.move_dir = message.direction
+		self.move_ratio = message.ratio
+	end
+
+	if message_id == hash("plant_bomb") then
+		local pos = go.get_position()
+		-- Привязываем к сетке
+		print(pos.x)
+		pos.x = math.floor(pos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE/2
+		print(pos.x)
+		pos.y = math.floor(pos.y / GRID_SIZE) * GRID_SIZE+ GRID_SIZE/2
+		factory.create("#bomb_factory", pos)
+	end
+	
 end
 
 function update(self, dt)

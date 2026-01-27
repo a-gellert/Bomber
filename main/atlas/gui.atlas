@@ -1,0 +1,7 @@
+images {
+  image: "/main/resources/gui/circleIn.png"
+}
+images {
+  image: "/main/resources/gui/circleOut.png"
+}
+extrude_borders: 2
