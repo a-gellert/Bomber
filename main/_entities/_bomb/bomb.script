@@ -32,13 +32,6 @@ local function explode(self)
 		if tile ~= 0 then
 			tilemap.set_tile(tm, layer_bricks, tx, ty, 0)
 		end
-
-		-- 3. Цепная реакция через Raycast
-		-- Мы ищем объекты в группе "bomb" или "dynamite"
-		local hit = physics.raycast(spawn_pos, spawn_pos + vmath.vector3(0.1, 0, 0), { hash("bomb"), hash("dynamite") })
-		if hit and hit.id ~= go.get_id() then
-			msg.post(hit.id, "detonate")
-		end
 	end
 
 	-- Звук взрыва (если есть компонент sound)
@@ -57,8 +50,9 @@ function init(self)
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("detonate") and not self.exploded then
-		timer.cancel(self.timer_handle)
-		explode(self)
+	if message_id == hash("collision_response") and not self.exploded then
+		timer.delay(0.2, false, function()
+			explode(self)
+		end)
 	end
 end

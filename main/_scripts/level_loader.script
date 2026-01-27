@@ -4,7 +4,6 @@ local LAYER_WALLS = hash("walls")
 local LAYER_BRICKS = hash("bricks")
 
 local function clear_level(self)
-	-- 1. Удаляем только те объекты, что были созданы
 	for _, id in ipairs(self.spawned_objects) do
 		if go.exists(id) then
 			go.delete(id)
@@ -12,12 +11,7 @@ local function clear_level(self)
 	end
 	self.spawned_objects = {}
 
-	-- 2. Умная очистка тайлмапа
-	-- Узнаем текущие границы (где реально нарисованы плитки)
 	local x, y, w, h = tilemap.get_bounds("#template")
-
-	-- Стираем только в пределах этих границ
-	-- Это уберет ошибки "Out of range" при очистке
 	if w > 0 and h > 0 then
 		for tx = x, x + w - 1 do
 			for ty = y, y + h - 1 do
@@ -35,10 +29,9 @@ local function load_level(self, level_id)
 		return 
 	end
 
-	-- Очищаем ПЕРЕД тем как рисовать новый
 	clear_level(self)
-
 	print("Загрузка уровня: " .. level_id)
+
 	local height = #data
 
 	for y, row in ipairs(data) do
@@ -47,12 +40,13 @@ local function load_level(self, level_id)
 			local char = string.sub(row, x, x)
 			local pos = vmath.vector3((x - 1) * levels.TILE_SIZE + 8, (map_y - 1) * levels.TILE_SIZE + 8, 0)
 
-			-- Ставим плитку только если она в текстовой схеме
-			-- Если уровень большой, убедитесь что в .tilemap границы 100х100
+			-- ТАЙЛЫ
 			if char == "W" then
 				tilemap.set_tile("#template", LAYER_WALLS, x, map_y, 376)
 			elseif char == "B" then
 				tilemap.set_tile("#template", LAYER_BRICKS, x, map_y, 52)
+
+				-- ОБЪЕКТЫ (с проверкой на существование фабрики)
 			elseif char == "P" then
 				pos.z = 1.0
 				local id = factory.create("#player_factory", pos)
@@ -61,6 +55,20 @@ local function load_level(self, level_id)
 				pos.z = 0.5
 				local id = factory.create("#exit_factory", pos)
 				table.insert(self.spawned_objects, id)
+
+				-- ВЗРЫВЧАТКА
+			elseif char == "M" then -- Мина
+				pos.z = 0.4
+				local id = factory.create("#mine_factory", pos)
+				table.insert(self.spawned_objects, id)
+
+			elseif char == "D" or char == "F" or char == "G" then -- Разные типы динамита
+				local p = 1
+				if char == "F" then p = 2 elseif char == "G" then p = 3 end
+				pos.z = 0.4
+				local id = factory.create("#dynamite_factory", pos, nil, { power = p })
+				table.insert(self.spawned_objects, id)
+
 			elseif char >= "1" and char <= "4" then
 				pos.z = 0.8
 				local id = factory.create("#enemy_factory", pos, nil, { ai_type = tonumber(char) })
@@ -73,7 +81,10 @@ end
 function init(self)
 	self.spawned_objects = {}
 	self.current_level = 1
-	load_level(self, self.current_level)
+	-- Небольшая задержка, чтобы все успело прогрузиться
+	timer.delay(0.1, false, function()
+		load_level(self, self.current_level)
+	end)
 end
 
 function on_message(self, message_id, message, sender)

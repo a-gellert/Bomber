@@ -1,0 +1,41 @@
+local TILE_SIZE = 16
+-- Наша виртуальная сетка
+local grid = {}
+
+-- Функция для пометки клетки (занята/свободна)
+local function set_cell_occupied(tx, ty, occupied)
+	if not grid[tx] then grid[tx] = {} end
+	grid[tx][ty] = occupied
+end
+
+local function is_cell_empty(gx, gy)
+	local tx = math.floor(gx / TILE_SIZE)
+	local ty = math.floor(gy / TILE_SIZE)
+
+	-- Если в таблице пусто или false — значит клетка свободна
+	if grid[tx] and grid[tx][ty] then
+		return false
+	end
+	return true
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("try_place_bomb") then
+		local gx = math.floor(message.pos.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE/2
+		local gy = math.floor(message.pos.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE/2
+
+		if is_cell_empty(gx, gy) then
+			-- Спавним бомбу
+			local bomb_id = factory.create("#bomb_factory", vmath.vector3(gx, gy, 0.5))
+
+			-- Помечаем клетку как занятую
+			local tx = math.floor(gx / TILE_SIZE)
+			local ty = math.floor(gy / TILE_SIZE)
+			set_cell_occupied(tx, ty, true)
+
+			print("Бомба установлена!")
+		else
+			print("Ячейка уже занята!")
+		end
+	end
+end

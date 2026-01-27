@@ -1,19 +1,19 @@
 images {
-  image: "/main/resources/tile_0380.png"
+  image: "/main/_resources/tile_0380.png"
 }
 images {
-  image: "/main/resources/tile_0022.png"
+  image: "/main/_resources/tile_0022.png"
 }
 images {
-  image: "/main/resources/tile_0240.png"
+  image: "/main/_resources/tile_0240.png"
 }
 animations {
   id: "spikes_down"
   images {
-    image: "/main/resources/tile_0045.png"
+    image: "/main/_resources/tile_0045.png"
   }
   images {
-    image: "/main/resources/tile_0166.png"
+    image: "/main/_resources/tile_0166.png"
   }
   playback: PLAYBACK_ONCE_BACKWARD
   fps: 6
@@ -21,10 +21,10 @@ animations {
 animations {
   id: "spikes_up"
   images {
-    image: "/main/resources/tile_0166.png"
+    image: "/main/_resources/tile_0166.png"
   }
   images {
-    image: "/main/resources/tile_0045.png"
+    image: "/main/_resources/tile_0045.png"
   }
   playback: PLAYBACK_ONCE_BACKWARD
   fps: 6

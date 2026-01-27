@@ -1,8 +1,8 @@
-image: "/main/resources/monochrome_tilemap.png"
+image: "/main/_resources/monochrome_tilemap.png"
 tile_width: 16
 tile_height: 16
 tile_spacing: 1
-collision: "/main/resources/monochrome_tilemap.png"
+collision: "/main/_resources/monochrome_tilemap.png"
 convex_hulls {
   index: 0
   count: 4

@@ -1,46 +1,29 @@
 components {
-  id: "enemy"
-  component: "/main/scripts/enemy.script"
-  properties {
-    id: "ai_type"
-    value: "3.0"
-    type: PROPERTY_TYPE_NUMBER
-  }
-  properties {
-    id: "speed"
-    value: "12.0"
-    type: PROPERTY_TYPE_NUMBER
-  }
-  properties {
-    id: "sight_range"
-    value: "20.0"
-    type: PROPERTY_TYPE_NUMBER
-  }
+  id: "dynamite"
+  component: "/main/_entities/_dynamite/dynamite.script"
 }
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "default_animation: \"tile_0240\"\n"
+  data: "default_animation: \"tile_0062\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "textures {\n"
   "  sampler: \"texture_sampler\"\n"
-  "  texture: \"/main/atlas/character.atlas\"\n"
+  "  texture: \"/main/atlas/Environment.atlas\"\n"
   "}\n"
   ""
-  position {
-    z: 0.1
-  }
 }
 embedded_components {
   id: "collisionobject"
   type: "collisionobject"
-  data: "type: COLLISION_OBJECT_TYPE_TRIGGER\n"
+  data: "type: COLLISION_OBJECT_TYPE_KINEMATIC\n"
   "mass: 0.0\n"
   "friction: 0.1\n"
   "restitution: 0.5\n"
-  "group: \"enemy\"\n"
-  "mask: \"player\"\n"
+  "group: \"bomb\"\n"
   "mask: \"explosion\"\n"
+  "mask: \"player\"\n"
+  "mask: \"enemy\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_BOX\n"
@@ -51,9 +34,15 @@ embedded_components {
   "    index: 0\n"
   "    count: 3\n"
   "  }\n"
-  "  data: 7.0\n"
-  "  data: 7.0\n"
+  "  data: 6.5\n"
+  "  data: 6.5\n"
   "  data: 10.0\n"
   "}\n"
+  ""
+}
+embedded_components {
+  id: "explosion_factory"
+  type: "factory"
+  data: "prototype: \"/main/_entities/_explosion/explosion.go\"\n"
   ""
 }

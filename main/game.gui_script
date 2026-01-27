@@ -1,66 +1,71 @@
-local hash_touch = hash("touch")
+local rendercam = require "rendercam.rendercam"
 
 function init(self)
-	-- Ссылка на узлы
-	self.bg = gui.get_node("joystick_bg")
-	self.stick = gui.get_node("joystick_stick")
+	msg.post(".", "acquire_input_focus")
+	self.bomb_source = gui.get_node("bomb_source")
+	self.bomb_drag = gui.get_node("bomb_drag")
+	self.is_dragging = false
+	gui.set_visible(self.bomb_drag, false)
+	self.initial_pos = gui.get_position(self.bomb_drag)
 
-	-- Настройки
-	self.max_distance = 100 -- Радиус хода стика в пикселях
-	self.center = gui.get_screen_position(self.bg) -- Центр джойстика на экране
-	self.touch_id = nil -- ID текущего касания
+	print("GUI Init OK. Жду касаний...")
 end
 
 function on_input(self, action_id, action)
-	if action_id == hash_touch then
-		-- Начало касания
-		if action.pressed and gui.pick_node(self.bg, action.x, action.y) then
-			self.touch_id = action.id
+	if action_id == hash("touch") then
+
+		-- ДИАГНОСТИКА 1: Видит ли игра клик?
+		if action.pressed then
+			print("Клик получен! Сырые координаты:", action.screen_x, action.screen_y)
 		end
-		
-		-- Добавь это в on_input выше
-		if action_id == hash_touch and action.pressed then
-			local bomb_btn = gui.get_node("bomb_button")
-			if gui.pick_node(bomb_btn, action.x, action.y) then
-				msg.post("player#script", "plant_bomb")
+
+		-- Пытаемся получить координаты GUI через Rendercam
+		local status, gpos = pcall(rendercam.screen_to_gui, action.screen_x, action.screen_y)
+
+		-- ДИАГНОСТИКА 2: Жив ли Rendercam?
+		if not status then
+			if action.pressed then print("ОШИБКА RENDERCAM: Камера не найдена или сбой скрипта.") end
+			-- АВАРИЙНЫЙ РЕЖИМ: Если камера сдохла, используем обычные координаты, чтобы хоть как-то работало
+			gpos = vmath.vector3(action.x, action.y, 0) 
+		elseif not gpos then
+			if action.pressed then print("Rendercam вернул nil (камера еще грузится)") end
+			return
+		end
+
+		-- Логика Drag
+		if action.pressed then
+			-- Проверяем попадание
+			if gui.pick_node(self.bomb_source, gpos.x, gpos.y) then
+				print("ПОПАДАНИЕ! Начали тащить бомбу.")
+				self.is_dragging = true
+				gui.set_visible(self.bomb_drag, true)
+				local c = gui.get_color(self.bomb_source)
+				c.w = 0.5
+				gui.set_color(self.bomb_source, c)
+			else
+				print("МИМО. Клик был в:", gpos.x, gpos.y, "А узел где-то в другом месте.")
 			end
 		end
-		
-		-- Движение пальца
-		if self.touch_id == action.id then
-			local touch_pos = vmath.vector3(action.x, action.y, 0)
-			local delta = touch_pos - self.center
 
-			-- Ограничиваем длину вектора (чтобы стик не улетал за границы)
-			local length = vmath.length(delta)
-			if length > self.max_distance then
-				delta = (delta / length) * self.max_distance
-				length = self.max_distance
-			end
+		if self.is_dragging then
+			gui.set_position(self.bomb_drag, gpos)
 
-			-- Визуально двигаем стик (относительно центра фона)
-			gui.set_position(self.stick, delta)
-
-			-- Отправляем данные игроку
-			local direction = vmath.normalize(delta)
-			local ratio = length / self.max_distance
-			msg.post("player#script", "move", { direction = direction, ratio = ratio })
-
-			-- Если палец отпустили — сброс
 			if action.released then
-				self.touch_id = nil
-				gui.set_position(self.stick, vmath.vector3(0, 0, 0))
-				msg.post("player#script", "move", { direction = vmath.vector3(0), ratio = 0 })
+				print("Бомба отпущена.")
+				self.is_dragging = false
+				gui.set_visible(self.bomb_drag, false)
+				local c = gui.get_color(self.bomb_source)
+				c.w = 1.0
+				gui.set_color(self.bomb_source, c)
+
+				-- Попытка поставить бомбу
+				local w_status, world_pos = pcall(rendercam.screen_to_world_2d, action.screen_x, action.screen_y)
+				if w_status and world_pos then
+					print("Отправляем сигнал на установку в мир:", world_pos)
+					msg.post("level_manager#level_manager", "try_place_bomb", { pos = world_pos })
+				end
+				gui.set_position(self.bomb_drag, self.initial_pos)
 			end
 		end
-	end
-end
-
-function on_message(self, message_id, message, sender)
-	if message_id == hash("add_score") then
-		self.score = self.score + message.amount
-		-- Обновляем текст на экране
-		local text_node = gui.get_node("score_text")
-		gui.set_text(text_node, "SCORE: " .. self.score)
 	end
 end
