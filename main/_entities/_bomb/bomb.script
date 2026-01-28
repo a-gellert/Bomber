@@ -1,4 +1,7 @@
-local GRID_SIZE = 16
+local CONFIG = require "main.game_config"
+
+
+local GRID_SIZE = CONFIG.GRID_SIZE
 
 local function explode(self)
 	if self.exploded then return end
@@ -6,11 +9,10 @@ local function explode(self)
 
 	local pos = go.get_position()
 	-- Центрируем точку взрыва по сетке
-	local cx = math.floor(pos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2
-	local cy = math.floor(pos.y / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2
+	local exp_pos = CONFIG.snap_to_grid(pos.x, pos.y)
 
 	local tm = "level_manager#template" 
-	local layer_bricks = hash("bricks")
+	local layer_bricks = CONFIG.TILE_BRICKS
 
 	-- Направления взрыва: центр, право, лево, верх, низ
 	local directions = {
@@ -19,7 +21,7 @@ local function explode(self)
 	}
 
 	for _, dir in ipairs(directions) do
-		local spawn_pos = vmath.vector3(cx + dir.x, cy + dir.y, 0.5)
+		local spawn_pos = vmath.vector3(pos.x + dir.x, exp_pos.y + dir.y, 0.5)
 
 		-- 1. Создаем визуальный огонь (из фабрики)
 		factory.create("#explosion_factory", spawn_pos)
@@ -44,14 +46,14 @@ end
 function init(self)
 	self.exploded = false
 	-- Запускаем таймер на 2 секунды
-	self.timer_handle = timer.delay(2, false, function()
+	self.timer_handle = timer.delay(CONFIG.BOMB_TIMER, false, function()
 		explode(self)
 	end)
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == hash("collision_response") and not self.exploded then
-		timer.delay(0.2, false, function()
+	if message_id == CONFIG.EVENT_COLLISION and not self.exploded then
+		timer.delay(CONFIG.CHAIN_REACTION_DELAY, false, function()
 			explode(self)
 		end)
 	end

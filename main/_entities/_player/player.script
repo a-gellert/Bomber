@@ -1,9 +1,12 @@
-local GRID_SIZE = 16
+local CONFIG = require "main.game_config"
+
+
+local GRID_SIZE = CONFIG.GRID_SIZE
 local MOVE_SPEED = 0.2
 
 -- Предполагаем, что у вас есть тайлмап с такими ID слоев
-local LAYER_WALLS = hash("walls") -- Неразрушимые стены
-local LAYER_BRICKS = hash("bricks") -- Разрушаемые стены
+local LAYER_WALLS = CONFIG.TILE_WALLS -- Неразрушимые стены
+local LAYER_BRICKS = CONFIG.TILE_BRICKS-- Разрушаемые стены
 
 function init(self)
 --	msg.post("@system:", "toggle_physics_debug")
@@ -76,10 +79,7 @@ function on_message(self, message_id, message, sender)
 	if message_id == hash("plant_bomb") then
 		local pos = go.get_position()
 		-- Привязываем к сетке
-		print(pos.x)
-		pos.x = math.floor(pos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE/2
-		print(pos.x)
-		pos.y = math.floor(pos.y / GRID_SIZE) * GRID_SIZE+ GRID_SIZE/2
+		pos = CONFIG.snap_to_grid(pos.x, pos.y)
 		factory.create("#bomb_factory", pos)
 	end
 	
@@ -118,10 +118,11 @@ function on_input(self, action_id, action)
 		-- Логика спавна бомбы будет тут
 		local pos = go.get_position()
 		-- Привязываем к сетке
-		print(pos.x)
-		pos.x = math.floor(pos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE/2
-		print(pos.x)
-		pos.y = math.floor(pos.y / GRID_SIZE) * GRID_SIZE+ GRID_SIZE/2
+		pos = CONFIG.snap_to_grid(pos.x, pos.y)
+		-- print(pos.x)
+		-- pos.x = math.floor(pos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE/2
+		-- print(pos.x)
+		-- pos.y = math.floor(pos.y / GRID_SIZE) * GRID_SIZE+ GRID_SIZE/2
 		factory.create("#bomb_factory", pos)
 	end
 end

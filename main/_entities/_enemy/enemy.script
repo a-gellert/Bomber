@@ -1,9 +1,12 @@
--- Настройки для инспектора
+local CONFIG = require "main.game_config"
+
+
+
 go.property("ai_type", 1) -- 1: Верт, 2: Гориз, 3: Рандом, 4: Преследователь
 go.property("speed", 100) -- Пикселей в секунду
 go.property("sight_range", 200) -- Дальность зрения для преследователя
 
-local GRID_SIZE = 16
+local GRID_SIZE = CONFIG.GRID_SIZE
 local GROUP_PLAYER = hash("player")
 local WALLS = { hash("walls"), hash("bricks"), hash("bombs") }
 
@@ -87,8 +90,7 @@ function think_and_move(self)
 
 	local pos = go.get_position()
 	-- Центрируем позицию (коррекция дрифта)
-	pos.x = math.floor(pos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2
-	pos.y = math.floor(pos.y / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2
+	pos = CONFIG.snap_to_grid(pos.x, pos.y)
 	go.set_position(pos)
 
 	local next_dir = vmath.vector3(0, 0, 0)
