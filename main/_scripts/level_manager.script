@@ -1,41 +1,177 @@
-local TILE_SIZE = 16
--- Наша виртуальная сетка
-local grid = {}
+local levels = require "main.levels"
+local CONFIG = require "main.game_config"
+local pathfinder = require "main.pathfinder"
 
--- Функция для пометки клетки (занята/свободна)
-local function set_cell_occupied(tx, ty, occupied)
-	if not grid[tx] then grid[tx] = {} end
-	grid[tx][ty] = occupied
+local LAYER_WALLS = hash("walls")
+local LAYER_BRICKS = hash("bricks")
+local GRID_SIZE = CONFIG.GRID_SIZE
+
+-- 1. Сетка и занятость
+local function set_cell_occupied(self, tx, ty, occupied)
+	if not self.grid[tx] then self.grid[tx] = {} end
+	self.grid[tx][ty] = occupied
 end
 
-local function is_cell_empty(gx, gy)
-	local tx = math.floor(gx / TILE_SIZE)
-	local ty = math.floor(gy / TILE_SIZE)
-
-	-- Если в таблице пусто или false — значит клетка свободна
-	if grid[tx] and grid[tx][ty] then
+local function is_cell_empty(self, x, y)
+	local tx = math.floor(x / GRID_SIZE)
+	local ty = math.floor(y / GRID_SIZE)
+	if self.grid[tx] and self.grid[tx][ty] then
 		return false
 	end
 	return true
 end
 
+-- 2. Очистка уровня
+local function clear_level(self)
+	for _, id in ipairs(self.spawned_objects) do
+		if go.exists(id) then go.delete(id) end
+	end
+	self.spawned_objects = {}
+	self.grid = {} -- Чистим сетку для поиска пути
+
+	local x, y, w, h = tilemap.get_bounds("#template")
+	if w > 0 and h > 0 then
+		for tx = x, x + w - 1 do
+			for ty = y, y + h - 1 do
+				tilemap.set_tile("#template", LAYER_WALLS, tx, ty, 0)
+				tilemap.set_tile("#template", LAYER_BRICKS, tx, ty, 0)
+			end
+		end
+	end
+end
+
+-- 3. Загрузка уровня (Объединенная логика)
+local function load_level(self, level_id)
+	local data = levels.schemes[level_id]
+	if not data then 
+		print("Уровень " .. level_id .. " не найден!") 
+		return 
+	end
+
+	clear_level(self)
+	print("Загрузка уровня: " .. level_id)
+	local height = #data
+
+	for y, row in ipairs(data) do
+		local map_y = height - y + 1 
+		for x = 1, #row do
+			local char = string.sub(row, x, x)
+			-- Смещение +8 для центрирования в клетке 16x16
+			local pos = vmath.vector3((x - 1) * GRID_SIZE + 8, (map_y - 1) * GRID_SIZE + 8, 0)
+
+			-- ТАЙЛЫ И СЕТКА
+			if char == "W" then
+				tilemap.set_tile("#template", LAYER_WALLS, x, map_y, 376)
+				set_cell_occupied(self, x - 1, map_y - 1, "W")
+			elseif char == "B" then
+				tilemap.set_tile("#template", LAYER_BRICKS, x, map_y, 52)
+				set_cell_occupied(self, x - 1, map_y - 1, "B")
+
+				-- ОБЪЕКТЫ
+			elseif char == "P" then
+				self.player_id = factory.create("#player_factory", vmath.vector3(pos.x, pos.y, 1))
+				table.insert(self.spawned_objects, self.player_id)
+			elseif char == "X" then
+				self.exit_id = factory.create("#exit_factory", vmath.vector3(pos.x, pos.y, 0.5))
+				table.insert(self.spawned_objects, self.exit_id)
+			elseif char == "M" then
+				local id = factory.create("#mine_factory", vmath.vector3(pos.x, pos.y, 0.4))
+				table.insert(self.spawned_objects, id)
+				set_cell_occupied(self, x - 1, map_y - 1, "M")
+			elseif char == "D" or char == "F" or char == "G" then
+				local p = 1
+				if char == "F" then p = 2 elseif char == "G" then p = 3 end
+				local id = factory.create("#dynamite_factory", vmath.vector3(pos.x, pos.y, 0.4), nil, { power = p })
+				set_cell_occupied(self, x - 1, map_y - 1, "D") -- Динамит (непроходим)
+				table.insert(self.spawned_objects, id)
+			elseif char >= "1" and char <= "4" then
+				local id = factory.create("#enemy_factory", vmath.vector3(pos.x, pos.y, 0.8), nil, { ai_type = tonumber(char) })
+				table.insert(self.spawned_objects, id)
+			end
+		end
+	end
+end
+
+function init(self)
+	self.spawned_objects = {}
+	self.grid = {}
+	self.current_level = 1
+	self.player_id = nil
+	self.exit_id = nil
+
+	timer.delay(0.1, false, function() load_level(self, self.current_level) end)
+end
+
 function on_message(self, message_id, message, sender)
+	-- СТАВИМ БОМБУ
 	if message_id == hash("try_place_bomb") then
-		local gx = math.floor(message.pos.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE/2
-		local gy = math.floor(message.pos.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE/2
+		local exp_pos = CONFIG.snap_to_grid(message.pos.x, message.pos.y)
+		if is_cell_empty(self, exp_pos.x, exp_pos.y) then
+			local bomb_id = factory.create("#bomb_factory", vmath.vector3(exp_pos.x, exp_pos.y, 0.5))
+			table.insert(self.spawned_objects, bomb_id)
+			set_cell_occupied(self, exp_pos.x, exp_pos.y, "D") -- Помечаем как динамит
+		end
 
-		if is_cell_empty(gx, gy) then
-			-- Спавним бомбу
-			local bomb_id = factory.create("#bomb_factory", vmath.vector3(gx, gy, 0.5))
+		-- ЧИТ: ИДЕМ К ВЫХОДУ
+	elseif message_id == hash("move_to_exit") then
+		if self.player_id and self.exit_id then
+			local p_pos = go.get_position(self.player_id)
+			local e_pos = go.get_position(self.exit_id)
 
-			-- Помечаем клетку как занятую
-			local tx = math.floor(gx / TILE_SIZE)
-			local ty = math.floor(gy / TILE_SIZE)
-			set_cell_occupied(tx, ty, true)
+			local start_x = math.floor(p_pos.x / GRID_SIZE)
+			local start_y = math.floor(p_pos.y / GRID_SIZE)
+			local end_x = math.floor(e_pos.x / GRID_SIZE)
+			local end_y = math.floor(e_pos.y / GRID_SIZE)
 
-			print("Бомба установлена!")
-		else
-			print("Ячейка уже занята!")
+			-- Попытка 1: Ищем прямой путь
+			local path = pathfinder.find_path(start_x, start_y, end_x, end_y, self.grid)
+
+			if not path then
+				print("Прямой путь заблокирован. Ищу ближайшую точку...")
+				local min_dist = 9999
+				local best_x, best_y = start_x, start_y
+
+				-- Перебираем сетку (в радиусе видимости или по всей карте)
+				-- Предположим, карта 20x20
+				for tx = 0, 20 do
+					for ty = 0, 20 do
+						-- Если клетка свободна
+						if not (self.grid[tx] and self.grid[tx][ty]) then
+							local dist = math.abs(tx - end_x) + math.abs(ty - end_y)
+							if dist < min_dist then
+								-- Проверяем, можно ли до этой точки ВООБЩЕ дойти
+								local test_path = pathfinder.find_path(start_x, start_y, tx, ty, self.grid)
+								if test_path then
+									min_dist = dist
+									best_x, best_y = tx, ty
+									path = test_path
+								end
+							end
+						end
+					end
+				end
+			end
+
+			if path then
+				-- Передаем игроку не только путь, но и координаты ГЛАВНОЙ цели
+				msg.post(self.player_id, "follow_path", { 
+					path = path, 
+					target_x = end_x, 
+					target_y = end_y 
+				})
+			else
+				print("Даже близко подойти невозможно!")
+			end
+		end
+
+		-- СЛЕДУЮЩИЙ УРОВЕНЬ
+	elseif message_id == hash("next_level") then
+		self.current_level = self.current_level + 1
+		load_level(self, self.current_level)
+	elseif message_id == hash("free_cell") then
+		if self.grid[message.x] then
+			self.grid[message.x][message.y] = nil
+			print("Клетка свободна, путь пересчитан!")
 		end
 	end
 end

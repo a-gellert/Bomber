@@ -25,7 +25,7 @@ local function explode(self)
 
 		-- 1. Создаем визуальный огонь (из фабрики)
 		factory.create("#explosion_factory", spawn_pos)
-
+		
 		-- 2. Работа с тайлами (разрушение стен)
 		local tx = math.floor(spawn_pos.x / GRID_SIZE) + 1
 		local ty = math.floor(spawn_pos.y / GRID_SIZE) + 1
@@ -33,6 +33,8 @@ local function explode(self)
 		local tile = tilemap.get_tile(tm, layer_bricks, tx, ty)
 		if tile ~= 0 then
 			tilemap.set_tile(tm, layer_bricks, tx, ty, 0)
+			-- Сообщаем менеджеру, что теперь тут пусто
+			msg.post("level_manager#level_manager", "free_cell", { x = tx - 1, y = ty - 1 })
 		end
 	end
 

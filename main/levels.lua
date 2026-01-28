@@ -5,9 +5,9 @@ M.TILE_SIZE = 16 -- Размер вашей плитки
 M.schemes = {
 	[1] = {
 		"WWWWWWWWWWWWWWW",
-		"W P...M...GF..W",
+		"W P....BB.GF..W",
 		"W.W1W.W.W.W.W.W",
-		"W.B..2..B..X..W",
+		"W.B.M2..B..X..W",
 		"W.W.W.W.W.W.W.W",
 		"W..3.....D.4..W",
 		"WWWWWWWWWWWWWWW",
@@ -16,7 +16,7 @@ M.schemes = {
 		"WWWWWWWWWWWWWWW",
 		"W P B B B B B W",
 		"W BWBWBWBWBWB W",
-		"W 2 . . . . X W",
+		"W 2 . .B. . X W",
 		"WWWWWWWWWWWWWWW",
 	}
 }

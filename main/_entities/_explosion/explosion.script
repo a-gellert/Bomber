@@ -9,15 +9,15 @@ function init(self)
 
 	-- 3. ЦЕПНАЯ РЕАКЦИЯ: Проверка объектов в момент появления
 	-- Мы делаем микро-проверку физикой прямо в точке спавна огня
-	local pos = go.get_position()
+	--local pos = go.get_position()
 	-- Ищем объекты групп "explosive" (бомбы, мины, динамит)
-	local hits = physics.raycast(pos, pos + vmath.vector3(0.1, 0, 0), { hash("bomb") , hash("mine")})
-
-	print(hits)
-	if hits then
-		-- Если нашли взрывчатку — подрываем её
-		msg.post(hits.id, "detonate")
-	end
+-- 	local hits = physics.raycast(pos, pos + vmath.vector3(0.1, 0, 0), { hash("bomb") , hash("mine")})
+-- 
+-- 	print(hits)
+-- 	if hits then
+-- 		-- Если нашли взрывчатку — подрываем её
+-- 		msg.post(hits.id, "detonate")
+-- 	end
 end
 
 function on_message(self, message_id, message, sender)

@@ -44,8 +44,8 @@ function on_message(self, message_id, message, sender)
 	end
 
 	-- Нанесение урона игроку (Trigger Response)
-	if message_id == hash("trigger_response") then
-		if message.enter and message.other_group == GROUP_PLAYER then
+	if message_id == CONFIG.EVENT_COLLISION then
+		if message.other_group == GROUP_PLAYER then
 			msg.post(message.other_id, "take_damage", { amount = 1 })
 		end
 	end
