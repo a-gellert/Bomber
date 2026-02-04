@@ -100,6 +100,7 @@ function init(self)
 	self.exit_id = nil
 
 	timer.delay(0.1, false, function() load_level(self, self.current_level) end)
+	self.start_time = socket.gettime()
 end
 
 function on_message(self, message_id, message, sender)
@@ -163,7 +164,16 @@ function on_message(self, message_id, message, sender)
 				print("Даже близко подойти невозможно!")
 			end
 		end
+	elseif message_id == hash("reached_exit") then
+		local play_time = socket.gettime() - self.start_time
 
+		-- Простая логика оценки
+		local stars = 1
+		if play_time < 20 then stars = 3
+		elseif play_time < 40 then stars = 2 end
+
+		-- Показываем GUI (укажи правильный путь к объекту с GUI)
+		msg.post("gui#level_results.gui", "show_results", { stars = stars })
 		-- СЛЕДУЮЩИЙ УРОВЕНЬ
 	elseif message_id == hash("next_level") then
 		self.current_level = self.current_level + 1

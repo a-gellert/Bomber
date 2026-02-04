@@ -58,6 +58,10 @@ embedded_instances {
   "  id: \"game\"\n"
   "  component: \"/main/game.gui\"\n"
   "}\n"
+  "components {\n"
+  "  id: \"level_results.gui\"\n"
+  "  component: \"/main/level_results.gui.gui\"\n"
+  "}\n"
   ""
 }
 embedded_instances {

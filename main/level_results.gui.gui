@@ -1,0 +1,120 @@
+script: "/main/level_results.gui_script"
+fonts {
+  name: "druid_text_bold"
+  font: "/druid/fonts/druid_text_bold.font"
+}
+nodes {
+  position {
+    x: 177.0
+    y: 383.0
+  }
+  size {
+    x: 512.0
+    y: 512.0
+  }
+  type: TYPE_BOX
+  id: "panel"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  position {
+    y: 200.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  text: "11"
+  font: "druid_text_bold"
+  id: "title"
+  parent: "panel"
+  inherit_alpha: true
+}
+nodes {
+  position {
+    x: -128.0
+    y: 64.0
+  }
+  size {
+    x: 64.0
+    y: 64.0
+  }
+  color {
+    z: 0.0
+  }
+  type: TYPE_BOX
+  id: "star1"
+  parent: "panel"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  position {
+    y: 100.0
+  }
+  size {
+    x: 64.0
+    y: 64.0
+  }
+  color {
+    z: 0.0
+  }
+  type: TYPE_BOX
+  id: "star2"
+  parent: "panel"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  position {
+    x: 128.0
+    y: 64.0
+  }
+  size {
+    x: 64.0
+    y: 64.0
+  }
+  color {
+    z: 0.0
+  }
+  type: TYPE_BOX
+  id: "star3"
+  parent: "panel"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  position {
+    y: -100.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  color {
+    x: 0.6
+    y: 0.6
+    z: 0.6
+  }
+  type: TYPE_BOX
+  id: "btn_next"
+  parent: "panel"
+  inherit_alpha: true
+  size_mode: SIZE_MODE_AUTO
+}
+nodes {
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  text: "<text>"
+  font: "druid_text_bold"
+  id: "btn_next_text"
+  parent: "btn_next"
+  inherit_alpha: true
+}
+material: "/builtins/materials/gui.material"
+adjust_reference: ADJUST_REFERENCE_PARENT

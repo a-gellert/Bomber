@@ -13,6 +13,7 @@ local function move_next(self)
 
 		if cur_x == self.final_target_x and cur_y == self.final_target_y then
 			print("УРА! Мы у выхода!")
+			--msg.post("/level_manager#level_manager", "reached_exit")
 		else
 			print("ПУТЬ ПРЕГРАЖДЕН! Я дошел максимально близко.")
 			-- Тут можно вывести GUI сообщение "Путь заблокирован кирпичами!"

@@ -30,6 +30,7 @@ embedded_components {
   "mask: \"enemy\"\n"
   "mask: \"explosion\"\n"
   "mask: \"mine\"\n"
+  "mask: \"exit\"\n"
   "embedded_collision_shape {\n"
   "  shapes {\n"
   "    shape_type: TYPE_BOX\n"
