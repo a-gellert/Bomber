@@ -30,4 +30,5 @@ title = Bomber
 dependencies#0 = https://github.com/Insality/druid/archive/refs/tags/1.1.6.zip
 dependencies#1 = https://github.com/rgrams/rendercam/archive/master.zip
 dependencies#2 = https://github.com/Insality/defold-event/archive/refs/tags/13.zip
+dependencies#3 = https://github.com/defold/extension-poki-sdk/archive/refs/tags/3.4.0.zip
 

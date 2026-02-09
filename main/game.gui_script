@@ -4,6 +4,7 @@ function init(self)
 	msg.post(".", "acquire_input_focus")
 	self.bomb_source = gui.get_node("bomb_source")
 	self.bomb_drag = gui.get_node("bomb_drag")
+	self.restart_btn = gui.get_node('restart_btn')
 	self.is_dragging = false
 	gui.set_visible(self.bomb_drag, false)
 	self.initial_pos = gui.get_position(self.bomb_drag)
@@ -14,6 +15,16 @@ end
 function on_input(self, action_id, action)
 	if action_id == hash("touch") then
 
+		if action.pressed then 
+			if gui.pick_node(self.restart_btn, action.x, action.y) then
+				print("Рестарт нажат один раз!")
+				msg.post("level_manager#level_manager", "restart_level")
+				-- Возвращаем true, чтобы ввод не провалился в объекты под кнопкой
+				return true 
+			end
+		end
+
+		
 		-- ДИАГНОСТИКА 1: Видит ли игра клик?
 		if action.pressed then
 			print("Клик получен! Сырые координаты:", action.screen_x, action.screen_y)
@@ -36,7 +47,7 @@ function on_input(self, action_id, action)
 		if action.pressed then
 			-- Проверяем попадание
 			if gui.pick_node(self.bomb_source, gpos.x, gpos.y) then
-				print("ПОПАДАНИЕ! Начали тащить бомбу.")
+				print("ПОПАДАНИЕ! Начали тащить бомбу.", gpos.x, gpos.y)
 				self.is_dragging = true
 				gui.set_visible(self.bomb_drag, true)
 				local c = gui.get_color(self.bomb_source)

@@ -1,0 +1,21 @@
+{
+  "bob_arguments" : {
+    "sha1" : "16c6fd602f32de4814660672c38ce3ccbbc1fb59",
+    "version" : "1.12.1",
+    "timestamp" : "2026-02-05 20:53:11"
+  },
+  "defold_sdk" : "16c6fd602f32de4814660672c38ce3ccbbc1fb59",
+  "dependencies" : [ {
+    "link" : "https://github.com/Insality/defold-event/archive/refs/tags/13.zip",
+    "md5" : "6D200B3D8C19BD95BC884BCC2B2C65FF"
+  }, {
+    "link" : "https://github.com/defold/extension-poki-sdk/archive/refs/tags/3.4.0.zip",
+    "md5" : "B2B43D8B5CAA27CECD4AB4DB668DE691"
+  }, {
+    "link" : "https://github.com/rgrams/rendercam/archive/master.zip",
+    "md5" : "0FD09D3B4D4BBB234A546B728038C75A"
+  }, {
+    "link" : "https://github.com/Insality/druid/archive/refs/tags/1.1.6.zip",
+    "md5" : "A248EADB45030367F768C827D75C5E98"
+  } ]
+}

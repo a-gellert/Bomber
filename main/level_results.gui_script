@@ -34,4 +34,5 @@ function on_input(self, action_id, action)
 			msg.post("level_manager#level_manager", "next_level")
 		end
 	end
+	return false
 end
